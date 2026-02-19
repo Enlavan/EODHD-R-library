@@ -32,10 +32,11 @@ get_index_composition <- function(index, cache_folder = get_default_cache()) {
   } else {
 
     url <- glue::glue(
-      "https://eodhd.com/api/fundamentals/{index}?api_token={token}"
+      "{get_base_url()}/fundamentals/{index}?api_token={token}&fmt=json"
     )
 
-    l_json <- jsonlite::fromJSON(url)
+    content <- query_api(url)
+    l_json <- jsonlite::fromJSON(content)
 
     info <- l_json$General |>
       purrr::map(fix_elements) |>

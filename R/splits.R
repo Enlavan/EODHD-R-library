@@ -22,7 +22,7 @@ get_splits <- function(ticker = "AAPL", exchange = "US",
   token <- get_token()
 
   if (token == get_demo_token()) {
-    cli::cli_abort("You need a proper token (not demonstration) for exchange list..")
+    cli::cli_abort("You need a proper token (not demonstration) for splits data..")
   }
 
   if (check_quota) {
@@ -61,7 +61,7 @@ get_splits <- function(ticker = "AAPL", exchange = "US",
 
   write_cache(df_split, f_out)
 
-  cli::cli_alert_success("got {nrow(df_split)} rows of dividend data")
+  cli::cli_alert_success("got {nrow(df_split)} rows of split data")
 
   return(df_split)
 

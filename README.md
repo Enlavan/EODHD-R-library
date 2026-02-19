@@ -19,11 +19,14 @@ exchanges across the world. This includes:
 - Financial information of companies (Balance Sheet, Income/Cashflow
   statement)
 - Valuation indicators
+- Technical indicators
+- Macro-economic data
+- Insider transactions
 - And [more](https://eodhd.com/)..
 
 Package eodhdR2 is the second and backwards incompatible version of
 [eodhd](https://github.com/EodHistoricalData/EODHD-APIs-R-Financial-Library),
-allowing fast and intelligent access to most of the API’s endpoints.
+allowing fast and intelligent access to most of the API's endpoints.
 
 # Features
 
@@ -40,7 +43,7 @@ allowing fast and intelligent access to most of the API’s endpoints.
 
 ``` r
 # available in CRAN
-install.package("eodhdR2")
+install.packages("eodhdR2")
 
 # development version
 devtools::install_github("EodHistoricalData/R-Library-for-financial-data-2024")
@@ -55,7 +58,7 @@ choosing a subscription, all users will authenticate an R session using
 a token from the website. For that:
 
 1)  Create an account at <https://eodhd.com/>
-2)  Go in “Settings” and look for your API token
+2)  Go in "Settings" and look for your API token
 
 ![](inst/extdata/figs/token.png)
 
@@ -66,20 +69,12 @@ While using `eodhdR2`, all authentications are managed with function
 eodhdR2::set_token("YOUR_TOKEN")
 ```
 
-Alternatively, while testing the API, you can use the “demo” token for
+Alternatively, while testing the API, you can use the "demo" token for
 demonstration.
 
 ``` r
 token <- eodhdR2::get_demo_token()
 eodhdR2::set_token(token)
-#> ✔ eodhd API token set
-#> ℹ Account name: API Documentation 2 (supportlevel1@eodhistoricaldata.com)
-#> ℹ Quota: 57360 | 10000000
-#> ℹ Subscription: demo
-#> ✖ You are using a **DEMONSTRATION** token for testing pourposes, with
-#> limited access to the data repositories. See <https://eodhd.com/>
-#> for registration and, after finding your token, use it with
-#> function eodhdR2::set_token("TOKEN").
 ```
 
 # Examples
@@ -91,176 +86,448 @@ ticker <- "AAPL"
 exchange <- "US"
 
 df_prices <- eodhdR2::get_prices(ticker, exchange)
-#> 
-#> ── retrieving price data for ticker AAPL|US ────────────────────────────────────
-#> ! Quota status: 57360|10000000, refreshing in 11.3 hours
-#> ℹ cache file AAPL_US_eodhd_prices.rds saved
-#> ✔ got 11246 rows of prices
-#> ℹ got daily data from 1980-12-12 to 2025-07-28
-
 head(df_prices)
-#>         date    open    high     low   close adjusted_close    volume ticker
-#> 1 1980-12-12 28.7392 28.8736 28.7392 28.7392         0.0986 469033600   AAPL
-#> 2 1980-12-15 27.3728 27.3728 27.2608 27.2608         0.0935 175884800   AAPL
-#> 3 1980-12-16 25.3792 25.3792 25.2448 25.2448         0.0866 105728000   AAPL
-#> 4 1980-12-17 25.8720 26.0064 25.8720 25.8720         0.0887  86441600   AAPL
-#> 5 1980-12-18 26.6336 26.7456 26.6336 26.6336         0.0914  73449600   AAPL
-#> 6 1980-12-19 28.2464 28.3808 28.2464 28.2464         0.0969  48630400   AAPL
-#>   exchange ret_adj_close
-#> 1       US            NA
-#> 2       US   -0.05172414
-#> 3       US   -0.07379679
-#> 4       US    0.02424942
-#> 5       US    0.03043968
-#> 6       US    0.06017505
 ```
-
-``` r
-library(ggplot2)
-
-p <- ggplot(df_prices, aes(y = adjusted_close, x = date)) + 
-  geom_line() + 
-  theme_light() + 
-  labs(title = "Adjusted Prices of AAPL",
-       subtitle = "Prices are adjusted to splits, dividends and other corporate events",
-       x = "Data",
-       y = "Adjusted Prices")
-
-p
-```
-
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ## Retrieving Dividends
 
 ``` r
-ticker <- "AAPL"
-exchange <- "US"
-
-df_div <- eodhdR2::get_dividends(ticker, exchange)
-#> 
-#> ── retrieving dividends for ticker AAPL|US ─────────────────────────────────────
-#> ! Quota status: 57368|10000000, refreshing in 11.3 hours
-#> ℹ cache file AAPL_US_eodhd_dividends.rds saved
-#> ✔ got 87 rows of dividend data
-
+df_div <- eodhdR2::get_dividends("AAPL", "US")
 head(df_div)
-#>         date ticker exchange declarationDate recordDate paymentDate period
-#> 1 1987-05-11   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#> 2 1987-08-10   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#> 3 1987-11-17   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#> 4 1988-02-12   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#> 5 1988-05-16   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#> 6 1988-08-15   AAPL       US            <NA>       <NA>        <NA>   <NA>
-#>     value unadjustedValue currency
-#> 1 0.00054         0.12096      USD
-#> 2 0.00054         0.06048      USD
-#> 3 0.00071         0.07952      USD
-#> 4 0.00071         0.07952      USD
-#> 5 0.00071         0.07952      USD
-#> 6 0.00071         0.07952      USD
 ```
+
+## Retrieving Stock Splits
 
 ``` r
-library(ggplot2)
-
-p <- ggplot(df_div, aes(y = value, x = date)) + 
-  geom_point(size = 1) + 
-  theme_light() + 
-  labs(title = "Adjusted Dividends of AAPL",
-       x = "Data",
-       y = "Adjusted Dividends")
-
-p
+# requires a paid token
+df_splits <- eodhdR2::get_splits(ticker = "AAPL", exchange = "US")
 ```
-
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ## Retrieving Fundamentals
 
 ``` r
-ticker <- "AAPL"
-exchange <- "US"
-
-l_fun <- eodhdR2::get_fundamentals(ticker, exchange)
-#> 
-#> ── retrieving fundamentals for ticker AAPL|US ──────────────────────────────────
-#> ! Quota status: 57370|10000000, refreshing in 11.3 hours
-#> ✔ querying API
-#> ✔ got 13 elements in raw list
-
+l_fun <- eodhdR2::get_fundamentals("AAPL", "US")
 names(l_fun)
-#>  [1] "General"             "Highlights"          "Valuation"          
-#>  [4] "SharesStats"         "Technicals"          "SplitsDividends"    
-#>  [7] "AnalystRatings"      "Holders"             "InsiderTransactions"
-#> [10] "ESGScores"           "outstandingShares"   "Earnings"           
-#> [13] "Financials"
 ```
 
-## Parsing financials (wide table)
+## Parsing Financials
 
 ``` r
+# wide format
 wide_financials <- eodhdR2::parse_financials(l_fun, "wide")
-#> 
-#> ── Parsing financial data for Apple Inc | AAPL ──
-#> 
-#> ℹ parsing Balance_Sheet  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ℹ parsing Cash_Flow  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ℹ parsing Income_Statement  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ✔ got 576 rows of financial data (wide format)
-
 head(wide_financials)
-#> # A tibble: 6 × 127
-#>   date       filing_date ticker company_name frequency type_financial
-#>   <date>     <date>      <chr>  <chr>        <chr>     <chr>         
-#> 1 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 2 2024-12-31 2025-01-31  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 3 2024-09-30 2024-11-01  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 4 2024-06-30 2024-08-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 5 2024-03-31 2024-05-03  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 6 2023-12-31 2024-02-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> # ℹ 121 more variables: currency_symbol <chr>, totalAssets <dbl>,
-#> #   intangibleAssets <dbl>, earningAssets <dbl>, otherCurrentAssets <dbl>,
-#> #   totalLiab <dbl>, totalStockholderEquity <dbl>, deferredLongTermLiab <dbl>,
-#> #   otherCurrentLiab <dbl>, commonStock <dbl>, capitalStock <dbl>,
-#> #   retainedEarnings <dbl>, otherLiab <dbl>, goodWill <dbl>, otherAssets <dbl>,
-#> #   cash <dbl>, cashAndEquivalents <dbl>, totalCurrentLiabilities <dbl>,
-#> #   currentDeferredRevenue <dbl>, netDebt <dbl>, shortTermDebt <dbl>, …
+
+# long format
+long_financials <- eodhdR2::parse_financials(l_fun, "long")
+head(long_financials)
 ```
 
-## Parsing financials (long table)
+## Live / Real-Time Prices
 
 ``` r
-long_financials <- eodhdR2::parse_financials(l_fun, "long")
-#> 
-#> ── Parsing financial data for Apple Inc | AAPL ──
-#> 
-#> ℹ parsing Balance_Sheet  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ℹ parsing Cash_Flow  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ℹ parsing Income_Statement  data
-#> ℹ    quarterly
-#> ℹ    yearly
-#> ✔ got 69120 rows of financial data (long format)
-
-head(long_financials)
-#> # A tibble: 6 × 9
-#>   date       filing_date ticker company_name frequency type_financial
-#>   <date>     <date>      <chr>  <chr>        <chr>     <chr>         
-#> 1 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 2 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 3 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 4 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 5 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> 6 2025-03-31 2025-05-02  AAPL   Apple Inc    quarterly Balance_Sheet 
-#> # ℹ 3 more variables: currency_symbol <chr>, name <chr>, value <dbl>
+df_rt <- eodhdR2::get_live_prices(ticker = "AAPL", exchange = "US")
+df_rt
 ```
+
+## Technical Indicators
+
+``` r
+df_sma <- eodhdR2::get_technical(ticker = "AAPL", exchange = "US",
+                                  func = "sma", period = 50)
+head(df_sma)
+```
+
+## Stock Screener
+
+``` r
+# requires a paid token
+df_screen <- eodhdR2::get_screener(sort = "market_capitalization", limit = 10)
+head(df_screen)
+```
+
+## Sentiments
+
+``` r
+df_sent <- eodhdR2::get_sentiments(ticker = "AAPL", exchange = "US")
+head(df_sent)
+```
+
+## News
+
+``` r
+df_news <- eodhdR2::get_news(ticker = "AAPL", exchange = "US")
+head(df_news)
+```
+
+## News Word Weights
+
+``` r
+# requires a paid token
+df_words <- eodhdR2::get_news_word_weights(ticker = "AAPL", exchange = "US")
+head(df_words)
+```
+
+## Macro Indicators
+
+``` r
+# requires a paid token
+df_gdp <- eodhdR2::get_macro_indicator(country = "USA", indicator = "gdp_current_usd")
+head(df_gdp)
+```
+
+## Calendar: Earnings
+
+``` r
+# requires a paid token
+df_earnings <- eodhdR2::get_earnings(symbols = "AAPL.US")
+head(df_earnings)
+```
+
+## Calendar: Earnings Trends
+
+``` r
+# requires a paid token
+df_trends <- eodhdR2::get_earnings_trends(symbols = "AAPL.US")
+head(df_trends)
+```
+
+## Calendar: Upcoming Splits
+
+``` r
+# requires a paid token
+df_upcoming_splits <- eodhdR2::get_upcoming_splits()
+head(df_upcoming_splits)
+```
+
+## Calendar: Upcoming Dividends
+
+``` r
+# requires a paid token
+df_upcoming_divs <- eodhdR2::get_upcoming_dividends()
+head(df_upcoming_divs)
+```
+
+## Calendar: IPOs
+
+``` r
+# requires a paid token
+df_ipos <- eodhdR2::get_ipos()
+head(df_ipos)
+```
+
+## Insider Transactions
+
+``` r
+# requires a paid token
+df_insider <- eodhdR2::get_insider_transactions(ticker = "AAPL", exchange = "US")
+head(df_insider)
+```
+
+## Economic Events
+
+``` r
+# requires a paid token
+df_events <- eodhdR2::get_economic_events(country = "US")
+head(df_events)
+```
+
+## Exchange Details
+
+``` r
+# requires a paid token
+l_details <- eodhdR2::get_exchange_details(exchange = "US")
+str(l_details, max.level = 1)
+```
+
+## Exchange List
+
+``` r
+# requires a paid token
+df_exchanges <- eodhdR2::get_exchanges()
+head(df_exchanges)
+```
+
+## Ticker List
+
+``` r
+# requires a paid token
+df_tickers <- eodhdR2::get_tickers(exchange = "US")
+head(df_tickers)
+```
+
+## Bulk Data: End-of-Day
+
+``` r
+# requires a paid token
+df_bulk_eod <- eodhdR2::get_bulk_eod(exchange = "US")
+head(df_bulk_eod)
+```
+
+## Bulk Data: Fundamentals
+
+``` r
+# requires a paid token
+l_bulk_fund <- eodhdR2::get_bulk_fundamentals(exchange = "US", limit = 10)
+```
+
+## Intraday Prices
+
+``` r
+df_intraday <- eodhdR2::get_intraday(ticker = "AAPL", exchange = "US")
+head(df_intraday)
+```
+
+## Index Composition
+
+``` r
+# requires a paid token
+l_index <- eodhdR2::get_index_composition("GSPC.INDX")
+str(l_index, max.level = 1)
+```
+
+## Search
+
+``` r
+df_results <- eodhdR2::get_search(query = "Apple", limit = 10)
+head(df_results)
+```
+
+## Historical Market Capitalization
+
+``` r
+# requires a paid token
+df_mcap <- eodhdR2::get_market_cap(ticker = "AAPL", exchange = "US")
+head(df_mcap)
+```
+
+## Symbol Change History
+
+``` r
+# requires a paid token
+df_changes <- eodhdR2::get_symbol_changes()
+head(df_changes)
+```
+
+## US Delayed Quotes
+
+``` r
+# requires a paid token
+df_quote <- eodhdR2::get_us_quote(symbols = "AAPL.US,MSFT.US")
+head(df_quote)
+```
+
+## Options Contracts
+
+``` r
+# requires a paid token
+df_opts <- eodhdR2::get_options(ticker = "AAPL", exchange = "US")
+head(df_opts)
+```
+
+## US Treasury Rates
+
+``` r
+# requires a paid token
+df_bills <- eodhdR2::get_ust_bill_rates()
+df_lt    <- eodhdR2::get_ust_long_term_rates()
+df_yield <- eodhdR2::get_ust_yield_rates()
+df_real  <- eodhdR2::get_ust_real_yield_rates()
+```
+
+## US Tick Data
+
+``` r
+# requires a paid token
+df_ticks <- eodhdR2::get_us_tick_data("AAPL",
+                                       from = Sys.Date() - 1,
+                                       to = Sys.Date())
+head(df_ticks)
+```
+
+## User Account Details
+
+``` r
+user_info <- eodhdR2::get_user_details()
+str(user_info)
+```
+
+## Company Logos
+
+``` r
+# requires a paid token
+logo_png <- eodhdR2::get_logo("AAPL.US")
+logo_svg <- eodhdR2::get_logo_svg("AAPL.US")
+```
+
+## Marketplace Tick Data (Unicorn Bay)
+
+``` r
+# requires marketplace subscription
+df_mp_ticks <- eodhdR2::get_mp_tick_data("AAPL",
+                                          from = Sys.Date() - 1,
+                                          to = Sys.Date())
+```
+
+## Options Underlying Symbols
+
+``` r
+# requires marketplace subscription
+df_underlyings <- eodhdR2::get_options_underlyings()
+```
+
+## S&P Global Indices List
+
+``` r
+# requires marketplace subscription
+df_indices <- eodhdR2::get_indices_list()
+```
+
+## CBOE Index Data
+
+``` r
+# requires a paid token
+df_vix <- eodhdR2::get_cboe_index_data("VIX")
+df_cboe_list <- eodhdR2::get_cboe_indices_list()
+```
+
+## ESG Data (Investverte)
+
+``` r
+# requires marketplace subscription
+df_esg_companies <- eodhdR2::get_esg_companies()
+df_esg_countries <- eodhdR2::get_esg_countries()
+df_esg_sectors   <- eodhdR2::get_esg_sectors()
+df_esg_company   <- eodhdR2::get_esg_company("AAPL.US")
+df_esg_country   <- eodhdR2::get_esg_country("US")
+df_esg_sector    <- eodhdR2::get_esg_sector("Technology")
+```
+
+## Illio Analytics
+
+``` r
+# requires marketplace subscription
+result_bw   <- eodhdR2::get_illio_best_and_worst("SnP500")
+result_bb   <- eodhdR2::get_illio_beta_bands("SnP500")
+result_vol  <- eodhdR2::get_illio_volume("SnP500")
+result_perf <- eodhdR2::get_illio_performance("SnP500")
+result_risk <- eodhdR2::get_illio_risk("SnP500")
+result_vola <- eodhdR2::get_illio_volatility("SnP500")
+result_cp   <- eodhdR2::get_illio_category_performance("SnP500")
+result_cr   <- eodhdR2::get_illio_category_risk("SnP500")
+```
+
+## PRAAMS Financial Analytics
+
+``` r
+# requires marketplace subscription
+# Bank data
+bs_isin <- eodhdR2::get_praams_bank_balance_sheet_isin("US0378331005")
+bs_tick <- eodhdR2::get_praams_bank_balance_sheet_ticker("AAPL", "US")
+is_isin <- eodhdR2::get_praams_bank_income_statement_isin("US0378331005")
+is_tick <- eodhdR2::get_praams_bank_income_statement_ticker("AAPL", "US")
+
+# Analysis
+bond_a <- eodhdR2::get_praams_bond_analysis("US0378331005")
+eq_isin <- eodhdR2::get_praams_equity_analysis_isin("US0378331005")
+eq_tick <- eodhdR2::get_praams_equity_analysis_ticker("AAPL", "US")
+
+# PDF Reports
+pdf_bond <- eodhdR2::get_praams_bond_report("US0378331005", "user@example.com")
+pdf_eq_i <- eodhdR2::get_praams_equity_report_isin("US0378331005", "user@example.com")
+pdf_eq_t <- eodhdR2::get_praams_equity_report_ticker("AAPL", "US", "user@example.com")
+
+# Screeners (POST)
+df_bonds   <- eodhdR2::get_praams_bond_screener()
+df_equities <- eodhdR2::get_praams_equity_screener()
+```
+
+## TradingHours
+
+``` r
+# requires marketplace subscription
+df_markets <- eodhdR2::get_tradinghours_markets()
+df_lookup  <- eodhdR2::get_tradinghours_lookup("NYSE")
+details    <- eodhdR2::get_tradinghours_details("US.NYSE")
+status     <- eodhdR2::get_tradinghours_status("US.NYSE")
+```
+
+# Complete Function Reference
+
+| Function | Description | Endpoint |
+|---|---|---|
+| `set_token()` | Authenticate R session | N/A |
+| `get_demo_token()` | Get demo token | N/A |
+| `get_prices()` | Historical EOD prices | `/eod/{SYMBOL}` |
+| `get_live_prices()` | Real-time / delayed prices | `/real-time/{SYMBOL}` |
+| `get_intraday()` | Intraday prices | `/intraday/{SYMBOL}` |
+| `get_dividends()` | Historical dividends | `/div/{SYMBOL}` |
+| `get_splits()` | Historical splits | `/splits/{SYMBOL}` |
+| `get_fundamentals()` | Fundamental data | `/fundamentals/{SYMBOL}` |
+| `parse_financials()` | Parse financial statements | N/A (local) |
+| `get_technical()` | Technical indicators | `/technical/{SYMBOL}` |
+| `get_screener()` | Stock screener | `/screener` |
+| `get_sentiments()` | News sentiments | `/sentiments` |
+| `get_news()` | Financial news | `/news` |
+| `get_news_word_weights()` | News word weights | `/news-word-weights` |
+| `get_macro_indicator()` | Macro indicators | `/macro-indicator/{COUNTRY}` |
+| `get_earnings()` | Earnings calendar | `/calendar/earnings` |
+| `get_earnings_trends()` | Earnings trends | `/calendar/trends` |
+| `get_upcoming_splits()` | Upcoming splits | `/calendar/splits` |
+| `get_upcoming_dividends()` | Upcoming dividends | `/calendar/dividends` |
+| `get_ipos()` | IPO calendar | `/calendar/ipos` |
+| `get_insider_transactions()` | Insider transactions | `/insider-transactions` |
+| `get_economic_events()` | Economic events | `/economic-events` |
+| `get_exchanges()` | Exchange list | `/exchanges-list` |
+| `get_exchange_details()` | Exchange details | `/exchange-details/{CODE}` |
+| `get_tickers()` | Ticker list | `/exchange-symbol-list/{EXCHANGE}` |
+| `get_index_composition()` | Index components | `/fundamentals/{INDEX}` |
+| `get_bulk_eod()` | Bulk EOD data | `/eod-bulk-last-day/{EXCHANGE}` |
+| `get_bulk_fundamentals()` | Bulk fundamentals | `/bulk-fundamentals/{EXCHANGE}` |
+| `get_search()` | Search instruments | `/search/{QUERY}` |
+| `get_market_cap()` | Historical market cap | `/historical-market-cap/{TICKER}` |
+| `get_symbol_changes()` | Symbol change history | `/symbol-change-history` |
+| `get_us_quote()` | US delayed quotes | `/us-quote-delayed` |
+| `get_options()` | Options contracts | `/mp/unicornbay/options/contracts` |
+| `get_ust_bill_rates()` | US Treasury bill rates | `/ust/bill-rates` |
+| `get_ust_long_term_rates()` | US Treasury long-term rates | `/ust/long-term-rates` |
+| `get_ust_yield_rates()` | US Treasury yield rates | `/ust/yield-curve-rates` |
+| `get_ust_real_yield_rates()` | US Treasury real yield rates | `/ust/real-yield-curve-rates` |
+| `get_us_tick_data()` | US tick-level trade data | `/ticks/{SYMBOL}` |
+| `get_user_details()` | User account details | `/user` |
+| `get_logo()` | Company logo (PNG) | `/logo/{SYMBOL}` |
+| `get_logo_svg()` | Company logo (SVG) | `/logo-svg/{SYMBOL}` |
+| `get_mp_tick_data()` | Marketplace tick data | `/mp/unicornbay/tickdata/ticks` |
+| `get_options_underlyings()` | Options underlying symbols | `/mp/unicornbay/options/underlying-symbols` |
+| `get_indices_list()` | S&P Global indices list | `/mp/unicornbay/spglobal/list` |
+| `get_cboe_index_data()` | CBOE index data | `/cboe/index` |
+| `get_cboe_indices_list()` | CBOE indices list | `/cboe/indices` |
+| `get_esg_companies()` | ESG company list | `/mp/investverte/companies` |
+| `get_esg_countries()` | ESG country list | `/mp/investverte/countries` |
+| `get_esg_sectors()` | ESG sector list | `/mp/investverte/sectors` |
+| `get_esg_company()` | ESG company data | `/mp/investverte/esg/{SYMBOL}` |
+| `get_esg_country()` | ESG country data | `/mp/investverte/country/{SYMBOL}` |
+| `get_esg_sector()` | ESG sector data | `/mp/investverte/sector/{SYMBOL}` |
+| `get_illio_best_and_worst()` | Illio best & worst | `/mp/illio/chapters/best-and-worst/{ID}` |
+| `get_illio_beta_bands()` | Illio beta bands | `/mp/illio/chapters/beta-bands/{ID}` |
+| `get_illio_volume()` | Illio volume | `/mp/illio/chapters/volume/{ID}` |
+| `get_illio_performance()` | Illio performance | `/mp/illio/chapters/performance/{ID}` |
+| `get_illio_risk()` | Illio risk | `/mp/illio/chapters/risk/{ID}` |
+| `get_illio_volatility()` | Illio volatility | `/mp/illio/chapters/volatility/{ID}` |
+| `get_illio_category_performance()` | Illio category performance | `/mp/illio/categories/performance/{ID}` |
+| `get_illio_category_risk()` | Illio category risk | `/mp/illio/categories/risk/{ID}` |
+| `get_praams_bank_balance_sheet_isin()` | PRAAMS bank balance sheet (ISIN) | `/mp/praams/bank/balance_sheet/isin/{ISIN}` |
+| `get_praams_bank_balance_sheet_ticker()` | PRAAMS bank balance sheet (ticker) | `/mp/praams/bank/balance_sheet/ticker/{TICKER}` |
+| `get_praams_bank_income_statement_isin()` | PRAAMS bank income statement (ISIN) | `/mp/praams/bank/income_statement/isin/{ISIN}` |
+| `get_praams_bank_income_statement_ticker()` | PRAAMS bank income statement (ticker) | `/mp/praams/bank/income_statement/ticker/{TICKER}` |
+| `get_praams_bond_analysis()` | PRAAMS bond analysis | `/mp/praams/analyse/bond/{ISIN}` |
+| `get_praams_equity_analysis_isin()` | PRAAMS equity analysis (ISIN) | `/mp/praams/analyse/equity/isin/{ISIN}` |
+| `get_praams_equity_analysis_ticker()` | PRAAMS equity analysis (ticker) | `/mp/praams/analyse/equity/ticker/{TICKER}` |
+| `get_praams_bond_report()` | PRAAMS bond report (PDF) | `/mp/praams/reports/bond/{ISIN}` |
+| `get_praams_equity_report_isin()` | PRAAMS equity report (ISIN, PDF) | `/mp/praams/reports/equity/isin/{ISIN}` |
+| `get_praams_equity_report_ticker()` | PRAAMS equity report (ticker, PDF) | `/mp/praams/reports/equity/ticker/{TICKER}` |
+| `get_praams_bond_screener()` | PRAAMS bond screener | `POST /mp/praams/explore/bond` |
+| `get_praams_equity_screener()` | PRAAMS equity screener | `POST /mp/praams/explore/equity` |
+| `get_tradinghours_markets()` | TradingHours market list | `/mp/tradinghours/markets` |
+| `get_tradinghours_lookup()` | TradingHours market lookup | `/mp/tradinghours/markets/lookup` |
+| `get_tradinghours_details()` | TradingHours market details | `/mp/tradinghours/markets/details` |
+| `get_tradinghours_status()` | TradingHours market status | `/mp/tradinghours/markets/status` |

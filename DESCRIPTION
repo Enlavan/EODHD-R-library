@@ -1,7 +1,7 @@
 Package: eodhdR2
 Type: Package
 Title: Official R API for Fetching Data from 'EODHD'
-Version: 0.6
+Version: 0.8
 Authors@R: c(
   person(given = c("Marcelo", "S."),
         family = "Perlin",
@@ -12,8 +12,8 @@ Authors@R: c(
          email = "support@eodhistoricaldata.com")
   )
 Maintainer: Marcelo S. Perlin <marceloperlin@gmail.com>
-Description: Second and backward-incompatible version of R package 'eodhd' <https://eodhd.com/>, extended with a cache and quota system, 
- also offering functions for cleaning and aggregating the financial data. 
+Description: Second and backward-incompatible version of R package 'eodhd' <https://eodhd.com/>, extended with a cache and quota system,
+ also offering functions for cleaning and aggregating the financial data.
 License: MIT + file LICENSE
 URL: https://github.com/EodHistoricalData/R-Library-for-financial-data-2024
 BugReports: https://github.com/EodHistoricalData/R-Library-for-financial-data-2024/issues
@@ -21,9 +21,7 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Suggests: 
-    knitr,
-    rmarkdown,
+Imports:
     cli,
     dplyr,
     fs,
@@ -33,6 +31,9 @@ Suggests:
     lubridate,
     purrr,
     readr,
-    tidyr,
+    tidyr
+Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

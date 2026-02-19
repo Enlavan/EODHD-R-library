@@ -4,7 +4,11 @@
 #         for-global-variable-note/28887
 my_globals <- c(
   "filing_date",
-  "adjusted_close"
+  "adjusted_close",
+  "date",
+  "sentiment",
+  "StartDate",
+  "EndDate"
 )
 
 utils::globalVariables(my_globals)

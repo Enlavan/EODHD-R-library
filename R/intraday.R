@@ -93,7 +93,7 @@ get_intraday <- function(
     }
 
     url <- glue::glue(
-      paste0('{get_base_url()}intraday/',
+      paste0('{get_base_url()}/intraday/',
              '{ticker}.{exchange}?',
              'api_token={token}&',
              'from={as.numeric(this_first_time)}&',

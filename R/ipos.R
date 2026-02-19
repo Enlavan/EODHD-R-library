@@ -14,7 +14,7 @@
 #' @examples
 #' \dontrun{
 #' set_token("YOUR_VALID_TOKEN")
-#' df_news <- get_ipos()
+#' df_ipos <- get_ipos()
 #' }
 get_ipos <- function(first_date = Sys.Date() - 3*365,
                      last_date = Sys.Date(),
